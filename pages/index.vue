@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { Locality } from '~/types/api'
 
-const { results, total, pending, error, refresh, page, totalPages } = useLocalities()
+const { results, total, pending, error, refresh, page, totalPages, searchInput } = useLocalities()
+const hasSearchInput = computed(() => searchInput.value.trim().length > 0)
 
 const formatLocalityName = (locality: Locality): string =>
   locality.name_en || locality.name || '(Unnamed locality)'
@@ -30,6 +31,29 @@ const formatCountryLabel = (country: Locality['country']): string => {
         </p>
         <p class="text-sm text-slate-500">Page {{ page }} of {{ totalPages }}</p>
       </header>
+
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <label for="search-by-name" class="mb-2 block text-sm font-medium text-slate-700">
+          Search by name
+        </label>
+        <div class="flex flex-col gap-2 sm:flex-row">
+          <input
+            id="search-by-name"
+            v-model="searchInput"
+            type="text"
+            placeholder="Type locality name..."
+            class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
+          >
+          <button
+            v-if="hasSearchInput"
+            type="button"
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+            @click="searchInput = ''"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
 
       <div
         v-if="error"
