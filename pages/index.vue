@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import type { Locality } from '~/types/api'
 
-const { results, total, pending, error, refresh, page, totalPages, searchInput } = useLocalities()
+const { results, total, pending, error, refresh, page, pageSize, totalPages, searchInput } = useLocalities()
 const hasSearchInput = computed(() => searchInput.value.trim().length > 0)
+const pageSizeOptions = [10, 20, 50]
 
 const formatLocalityName = (locality: Locality): string =>
   locality.name_en || locality.name || '(Unnamed locality)'
@@ -53,6 +54,29 @@ const formatCountryLabel = (country: Locality['country']): string => {
             Clear
           </button>
         </div>
+      </div>
+
+      <div class="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2 text-sm text-slate-700">
+          <label for="page-size" class="font-medium text-slate-700">Page size</label>
+          <select
+            id="page-size"
+            v-model.number="pageSize"
+            :disabled="pending"
+            class="rounded-md border border-slate-300 bg-white px-2 py-1.5 text-sm text-slate-900 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <option v-for="size in pageSizeOptions" :key="size" :value="size">
+              {{ size }}
+            </option>
+          </select>
+        </div>
+
+        <PaginationControls
+          :page="page"
+          :total-pages="totalPages"
+          :disabled="pending"
+          @update:page="page = $event"
+        />
       </div>
 
       <div
@@ -131,6 +155,15 @@ const formatCountryLabel = (country: Locality['country']): string => {
             </template>
           </tbody>
         </table>
+      </div>
+
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <PaginationControls
+          :page="page"
+          :total-pages="totalPages"
+          :disabled="pending"
+          @update:page="page = $event"
+        />
       </div>
     </section>
   </main>

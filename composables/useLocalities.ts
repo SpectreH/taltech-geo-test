@@ -34,6 +34,10 @@ export const useLocalities = () => {
     page.value = 1
   })
 
+  watch(pageSize, () => {
+    page.value = 1
+  })
+
   const { data, pending, error, refresh } = useFetch<PaginatedResponse<Locality>>(endpoint, {
     params,
     watch: [params]
@@ -42,6 +46,17 @@ export const useLocalities = () => {
   const results = computed(() => data.value?.results ?? [])
   const total = computed(() => data.value?.count ?? 0)
   const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize.value)))
+
+  watch([page, totalPages], ([currentPage, maxPages]) => {
+    if (currentPage < 1) {
+      page.value = 1
+      return
+    }
+
+    if (currentPage > maxPages) {
+      page.value = maxPages
+    }
+  })
 
   return {
     results,
