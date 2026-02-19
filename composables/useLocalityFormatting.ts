@@ -32,6 +32,31 @@ export const useLocalityFormatting = () => {
     return String(value)
   }
 
+  const formatDisplayValue = (value?: string | number | null): string => {
+    if (value === null || value === undefined) {
+      return '—'
+    }
+
+    if (typeof value === 'string' && value.trim().length === 0) {
+      return '—'
+    }
+
+    return String(value)
+  }
+
+  const formatDateValue = (value?: string | null): string => {
+    if (!value) {
+      return '—'
+    }
+
+    const timestamp = Date.parse(value)
+    if (Number.isNaN(timestamp)) {
+      return value
+    }
+
+    return new Date(timestamp).toISOString().replace('T', ' ').replace('Z', ' UTC')
+  }
+
   const getMapCoordinates = (locality?: Pick<Locality, 'latitude' | 'longitude'> | null): Coordinates | null => {
     const lat = locality?.latitude
     const lng = locality?.longitude
@@ -47,6 +72,8 @@ export const useLocalityFormatting = () => {
     formatLocalityName,
     formatCountryLabel,
     formatCoordinate,
+    formatDisplayValue,
+    formatDateValue,
     getMapCoordinates
   }
 }

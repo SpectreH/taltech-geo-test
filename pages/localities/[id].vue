@@ -10,7 +10,14 @@ interface HttpLikeError {
 
 const route = useRoute()
 const config = useRuntimeConfig()
-const { formatLocalityName, formatCountryLabel, formatCoordinate, getMapCoordinates } = useLocalityFormatting()
+const {
+  formatLocalityName,
+  formatCountryLabel,
+  formatCoordinate,
+  formatDisplayValue,
+  formatDateValue,
+  getMapCoordinates
+} = useLocalityFormatting()
 
 const rawRouteId = computed(() => {
   const raw = route.params.id
@@ -66,6 +73,15 @@ const localityName = computed(() => {
   return formatLocalityName(locality.value)
 })
 
+const localitySecondaryName = computed(() => {
+  const name = locality.value?.name?.trim()
+  if (!name || name === localityName.value) {
+    return null
+  }
+
+  return name
+})
+
 const mapCoordinates = computed(() => getMapCoordinates(locality.value))
 </script>
 
@@ -107,6 +123,9 @@ const mapCoordinates = computed(() => getMapCoordinates(locality.value))
 
       <article v-else-if="locality" class="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
         <h1 class="text-2xl font-semibold text-slate-900">{{ localityName }}</h1>
+        <p v-if="localitySecondaryName" class="mt-1 text-sm text-slate-500">
+          {{ localitySecondaryName }}
+        </p>
 
         <dl class="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2">
           <div>
@@ -124,6 +143,26 @@ const mapCoordinates = computed(() => getMapCoordinates(locality.value))
           <div>
             <dt class="text-sm font-medium text-slate-500">Longitude</dt>
             <dd class="mt-1 text-sm text-slate-900">{{ formatCoordinate(locality.longitude) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-slate-500">Depth</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ formatDisplayValue(locality.depth) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-slate-500">Elevation</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ formatDisplayValue(locality.elevation) }}</dd>
+          </div>
+          <div>
+            <dt class="text-sm font-medium text-slate-500">Date changed</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ formatDateValue(locality.date_changed) }}</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-slate-500">Remarks</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ formatDisplayValue(locality.remarks) }}</dd>
+          </div>
+          <div class="sm:col-span-2">
+            <dt class="text-sm font-medium text-slate-500">Remarks location</dt>
+            <dd class="mt-1 text-sm text-slate-900">{{ formatDisplayValue(locality.remarks_location) }}</dd>
           </div>
         </dl>
 

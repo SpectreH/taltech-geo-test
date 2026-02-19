@@ -18,4 +18,9 @@ export interface Locality {
   country?: number | Country | null
   latitude?: number | null
   longitude?: number | null
+  depth?: number | null
+  elevation?: string | number | null
+  remarks?: string | null
+  remarks_location?: string | null
+  date_changed?: string | null
 }
