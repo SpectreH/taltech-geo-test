@@ -25,10 +25,7 @@ const rawRouteId = computed(() => {
 })
 
 const localityId = computed(() => Number(rawRouteId.value))
-
-if (!Number.isInteger(localityId.value) || localityId.value <= 0) {
-  throw createError({ statusCode: 404, statusMessage: 'Not Found' })
-}
+const isValidLocalityId = computed(() => Number.isInteger(localityId.value) && localityId.value > 0)
 
 const resolveStatusCode = (error: unknown): number | undefined => {
   if (typeof error !== 'object' || error === null) {
@@ -40,8 +37,12 @@ const resolveStatusCode = (error: unknown): number | undefined => {
 }
 
 const { data: locality, pending, error, refresh } = await useAsyncData(
-  () => `locality-${localityId.value}`,
+  () => `locality-${rawRouteId.value ?? 'unknown'}`,
   async () => {
+    if (!isValidLocalityId.value) {
+      return null
+    }
+
     try {
       return await $fetch<Locality>(`${config.public.apiBase}/localities/${localityId.value}/`, {
         params: {
@@ -57,13 +58,9 @@ const { data: locality, pending, error, refresh } = await useAsyncData(
     }
   },
   {
-    watch: [localityId]
+    watch: [rawRouteId]
   }
 )
-
-if ((!locality.value || typeof locality.value.id !== 'number') && !error.value) {
-  throw createError({ statusCode: 404, statusMessage: 'Not Found' })
-}
 
 const localityName = computed(() => {
   if (!locality.value) {
@@ -178,6 +175,16 @@ const mapCoordinates = computed(() => getMapCoordinates(locality.value))
           <p v-else class="text-sm text-slate-500">No coordinates available.</p>
         </section>
       </article>
+
+      <div v-else class="space-y-4 rounded-lg border border-slate-200 bg-white p-6 text-sm text-slate-700 shadow-sm">
+        <p>Locality not found.</p>
+        <NuxtLink
+          to="/"
+          class="inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-3 py-2 font-medium text-slate-700 transition hover:bg-slate-100"
+        >
+          Back to list
+        </NuxtLink>
+      </div>
     </section>
   </main>
 </template>

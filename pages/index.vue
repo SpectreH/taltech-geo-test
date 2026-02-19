@@ -3,6 +3,21 @@ const { results, total, pending, error, refresh, page, pageSize, totalPages, sea
 const hasSearchInput = computed(() => search.value.trim().length > 0)
 const pageSizeOptions = [10, 20, 50]
 const { formatLocalityName, formatCountryLabel } = useLocalityFormatting()
+const showingStart = computed(() => {
+  if (total.value === 0) {
+    return 0
+  }
+
+  return (page.value - 1) * pageSize.value + 1
+})
+
+const showingEnd = computed(() => {
+  if (total.value === 0) {
+    return 0
+  }
+
+  return Math.min(page.value * pageSize.value, total.value)
+})
 </script>
 
 <template>
@@ -13,6 +28,12 @@ const { formatLocalityName, formatCountryLabel } = useLocalityFormatting()
         <p class="text-sm text-slate-600">
           Total localities:
           <span class="font-semibold text-slate-900">{{ total }}</span>
+        </p>
+        <p v-if="total === 0" class="text-sm text-slate-500">
+          Showing 0 results.
+        </p>
+        <p v-else class="text-sm text-slate-500">
+          Showing {{ showingStart }}-{{ showingEnd }} of {{ total }}
         </p>
         <p class="text-sm text-slate-500">Page {{ page }} of {{ totalPages }}</p>
       </header>
@@ -32,7 +53,8 @@ const { formatLocalityName, formatCountryLabel } = useLocalityFormatting()
           <button
             v-if="hasSearchInput"
             type="button"
-            class="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+            :disabled="pending"
+            class="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 disabled:cursor-not-allowed disabled:opacity-70"
             @click="search = ''"
           >
             Clear

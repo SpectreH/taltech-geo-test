@@ -7,14 +7,15 @@ export interface PaginatedResponse<T> {
 
 export interface Country {
   id: number
-  name?: string
-  name_en?: string
+  name?: string | null
+  name_en?: string | null
+  [key: string]: unknown
 }
 
 export interface Locality {
   id: number
-  name?: string
-  name_en?: string
+  name?: string | null
+  name_en?: string | null
   country?: number | Country | null
   latitude?: number | null
   longitude?: number | null
