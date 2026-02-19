@@ -1,18 +1,35 @@
 <script setup lang="ts">
 import type { Locality } from '~/types/api'
 
+interface HttpLikeError {
+  statusCode?: number
+  response?: {
+    status?: number
+  }
+}
+
 const route = useRoute()
 const config = useRuntimeConfig()
+const { formatLocalityName, formatCountryLabel, formatCoordinate, getMapCoordinates } = useLocalityFormatting()
 
-const routeId = computed(() => {
+const rawRouteId = computed(() => {
   const raw = route.params.id
   return Array.isArray(raw) ? raw[0] : raw
 })
 
-const localityId = computed(() => Number(routeId.value))
+const localityId = computed(() => Number(rawRouteId.value))
 
 if (!Number.isInteger(localityId.value) || localityId.value <= 0) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
+}
+
+const resolveStatusCode = (error: unknown): number | undefined => {
+  if (typeof error !== 'object' || error === null) {
+    return undefined
+  }
+
+  const maybeHttpError = error as HttpLikeError
+  return maybeHttpError.statusCode ?? maybeHttpError.response?.status
 }
 
 const { data: locality, pending, error, refresh } = await useAsyncData(
@@ -24,9 +41,8 @@ const { data: locality, pending, error, refresh } = await useAsyncData(
           expand: 'country'
         }
       })
-    } catch (fetchError: any) {
-      const statusCode = fetchError?.statusCode ?? fetchError?.response?.status
-      if (statusCode === 404) {
+    } catch (fetchError: unknown) {
+      if (resolveStatusCode(fetchError) === 404) {
         return null
       }
 
@@ -42,27 +58,15 @@ if ((!locality.value || typeof locality.value.id !== 'number') && !error.value) 
   throw createError({ statusCode: 404, statusMessage: 'Not Found' })
 }
 
-const localityName = computed(() => locality.value?.name_en || locality.value?.name || '(Unnamed locality)')
-
-const formatCountryLabel = (country: Locality['country']): string => {
-  if (country === null || country === undefined) {
-    return '—'
+const localityName = computed(() => {
+  if (!locality.value) {
+    return '(Unnamed locality)'
   }
 
-  if (typeof country === 'number') {
-    return `#${country}`
-  }
+  return formatLocalityName(locality.value)
+})
 
-  return country.name_en || country.name || `#${country.id}`
-}
-
-const formatCoordinate = (value?: number | null): string => {
-  if (typeof value !== 'number') {
-    return '—'
-  }
-
-  return String(value)
-}
+const mapCoordinates = computed(() => getMapCoordinates(locality.value))
 </script>
 
 <template>
@@ -122,6 +126,18 @@ const formatCoordinate = (value?: number | null): string => {
             <dd class="mt-1 text-sm text-slate-900">{{ formatCoordinate(locality.longitude) }}</dd>
           </div>
         </dl>
+
+        <section class="mt-6 space-y-2">
+          <h2 class="text-base font-semibold text-slate-900">Map</h2>
+          <LocalityMap
+            v-if="mapCoordinates"
+            :key="`locality-map-${mapCoordinates.lat}-${mapCoordinates.lng}`"
+            :lat="mapCoordinates.lat"
+            :lng="mapCoordinates.lng"
+            :zoom="13"
+          />
+          <p v-else class="text-sm text-slate-500">No coordinates available.</p>
+        </section>
       </article>
     </section>
   </main>

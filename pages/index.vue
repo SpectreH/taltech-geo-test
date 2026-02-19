@@ -1,24 +1,8 @@
 <script setup lang="ts">
-import type { Locality } from '~/types/api'
-
 const { results, total, pending, error, refresh, page, pageSize, totalPages, search } = useLocalities()
 const hasSearchInput = computed(() => search.value.trim().length > 0)
 const pageSizeOptions = [10, 20, 50]
-
-const formatLocalityName = (locality: Locality): string =>
-  locality.name_en || locality.name || '(Unnamed locality)'
-
-const formatCountryLabel = (country: Locality['country']): string => {
-  if (country === null || country === undefined) {
-    return '—'
-  }
-
-  if (typeof country === 'number') {
-    return `#${country}`
-  }
-
-  return country.name_en || country.name || `#${country.id}`
-}
+const { formatLocalityName, formatCountryLabel } = useLocalityFormatting()
 </script>
 
 <template>
