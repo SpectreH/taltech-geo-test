@@ -4,10 +4,8 @@ export const useLocalities = () => {
   const config = useRuntimeConfig()
   const endpoint = `${config.public.apiBase}/localities/`
 
-  const page = ref(1)
-  const pageSize = ref(20)
-  const searchInput = ref('')
-  const search = useDebouncedRef(searchInput, 350)
+  const { search, page, pageSize } = useLocalitiesListState()
+  const debouncedSearch = useDebouncedRef(search, 350)
 
   const offset = computed(() => (page.value - 1) * pageSize.value)
   const params = computed(() => {
@@ -22,7 +20,7 @@ export const useLocalities = () => {
       expand: 'country'
     }
 
-    const searchTerm = search.value.trim()
+    const searchTerm = debouncedSearch.value.trim()
     if (searchTerm) {
       query.name__icontains = searchTerm
     }
@@ -30,7 +28,7 @@ export const useLocalities = () => {
     return query
   })
 
-  watch(search, () => {
+  watch(debouncedSearch, () => {
     page.value = 1
   })
 
@@ -66,7 +64,7 @@ export const useLocalities = () => {
     refresh,
     page,
     pageSize,
-    searchInput,
+    search,
     totalPages
   }
 }

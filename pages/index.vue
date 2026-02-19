@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Locality } from '~/types/api'
 
-const { results, total, pending, error, refresh, page, pageSize, totalPages, searchInput } = useLocalities()
-const hasSearchInput = computed(() => searchInput.value.trim().length > 0)
+const { results, total, pending, error, refresh, page, pageSize, totalPages, search } = useLocalities()
+const hasSearchInput = computed(() => search.value.trim().length > 0)
 const pageSizeOptions = [10, 20, 50]
 
 const formatLocalityName = (locality: Locality): string =>
@@ -40,7 +40,7 @@ const formatCountryLabel = (country: Locality['country']): string => {
         <div class="flex flex-col gap-2 sm:flex-row">
           <input
             id="search-by-name"
-            v-model="searchInput"
+            v-model="search"
             type="text"
             placeholder="Type locality name..."
             class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200"
@@ -49,7 +49,7 @@ const formatCountryLabel = (country: Locality['country']): string => {
             v-if="hasSearchInput"
             type="button"
             class="inline-flex items-center justify-center rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
-            @click="searchInput = ''"
+            @click="search = ''"
           >
             Clear
           </button>
@@ -107,21 +107,24 @@ const formatCountryLabel = (country: Locality['country']): string => {
               <th scope="col" class="hidden px-4 py-3 text-left font-semibold text-slate-700 sm:table-cell">
                 Country
               </th>
+              <th scope="col" class="hidden px-4 py-3 text-left font-semibold text-slate-700 sm:table-cell">
+                View
+              </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-if="pending">
-              <td colspan="3" class="px-4 py-6 text-slate-500">Loading localities...</td>
+              <td colspan="4" class="px-4 py-6 text-slate-500">Loading localities...</td>
             </tr>
 
             <tr v-else-if="error">
-              <td colspan="3" class="px-4 py-6 text-slate-500">
+              <td colspan="4" class="px-4 py-6 text-slate-500">
                 Unable to display localities right now.
               </td>
             </tr>
 
             <tr v-else-if="results.length === 0">
-              <td colspan="3" class="px-4 py-6 text-slate-500">
+              <td colspan="4" class="px-4 py-6 text-slate-500">
                 No localities found.
               </td>
             </tr>
@@ -133,7 +136,12 @@ const formatCountryLabel = (country: Locality['country']): string => {
                 class="align-top transition-colors hover:bg-slate-50"
               >
                 <td class="px-4 py-4">
-                  <p class="font-medium text-slate-900">{{ formatLocalityName(locality) }}</p>
+                  <NuxtLink
+                    :to="`/localities/${locality.id}`"
+                    class="font-medium text-slate-900 underline-offset-2 hover:text-slate-700 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500"
+                  >
+                    {{ formatLocalityName(locality) }}
+                  </NuxtLink>
                   <dl class="mt-2 space-y-1 text-xs text-slate-500 sm:hidden">
                     <div class="flex gap-2">
                       <dt class="font-semibold text-slate-600">ID:</dt>
@@ -143,6 +151,17 @@ const formatCountryLabel = (country: Locality['country']): string => {
                       <dt class="font-semibold text-slate-600">Country:</dt>
                       <dd>{{ formatCountryLabel(locality.country) }}</dd>
                     </div>
+                    <div class="flex gap-2">
+                      <dt class="font-semibold text-slate-600">View:</dt>
+                      <dd>
+                        <NuxtLink
+                          :to="`/localities/${locality.id}`"
+                          class="underline underline-offset-2 hover:text-slate-700"
+                        >
+                          Details
+                        </NuxtLink>
+                      </dd>
+                    </div>
                   </dl>
                 </td>
                 <td class="hidden px-4 py-4 text-slate-700 sm:table-cell">
@@ -150,6 +169,14 @@ const formatCountryLabel = (country: Locality['country']): string => {
                 </td>
                 <td class="hidden px-4 py-4 text-slate-700 sm:table-cell">
                   {{ formatCountryLabel(locality.country) }}
+                </td>
+                <td class="hidden px-4 py-4 text-slate-700 sm:table-cell">
+                  <NuxtLink
+                    :to="`/localities/${locality.id}`"
+                    class="font-medium text-slate-700 underline-offset-2 hover:text-slate-900 hover:underline"
+                  >
+                    View
+                  </NuxtLink>
                 </td>
               </tr>
             </template>
